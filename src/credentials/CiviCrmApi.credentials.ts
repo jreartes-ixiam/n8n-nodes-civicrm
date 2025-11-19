@@ -28,6 +28,7 @@ export class CiviCrmApi implements ICredentialType {
 		},
 	];
 
+	// ← ESTA ES LA PARTE CRÍTICA
 	authenticate = {
 		type: 'generic' as const,
 		properties: {
