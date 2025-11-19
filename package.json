@@ -1,6 +1,6 @@
 {
   "name": "@ixiam/n8n-nodes-civicrm",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Full-featured CiviCRM API v4 integration for n8n with support for Contacts, Memberships, Groups, Relationships, Activities and structured sub-entities like Email, Phone, and Address.",
   "license": "MIT",
   "keywords": [
@@ -19,16 +19,15 @@
     "release": "n8n-node release",
     "test": "npm run build"
   },
- "repository": {
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/ixiam/n8n-nodes-civicrm.git"
-},
-
-"homepage": "https://www.ixiam.com",
+  },
+  "homepage": "https://www.ixiam.com",
   "bugs": {
     "url": "https://github.com/ixiam/n8n-nodes-civicrm/issues"
   },
-"author": "Julian Reartes <j.reartes@ixiam.com>",
+  "author": "Julian Reartes <j.reartes@ixiam.com>",
   "engines": {
     "node": ">=18"
   },
