@@ -1,0 +1,14 @@
+# Node
+node_modules/
+dist/
+pnpm-lock.yaml
+npm-debug.log
+
+# Tests
+coverage/
+
+# MacOS
+.DS_Store
+
+# n8n build output
+*.tgz
