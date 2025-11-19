@@ -9,29 +9,29 @@ export class CiviCrmApi implements ICredentialType {
 	displayName = 'CiviCRM API';
 	documentationUrl = 'https://docs.civicrm.org/dev/en/latest/api/';
 
+	// ✔ NECESARIO PARA QUE N8N ACEPTE EL TEST
+	extends = ['genericApi' as const];
+
 	authenticate = {
 		type: 'generic' as const,
 		properties: {
 			headers: {
 				'X-Civi-Auth': '={{"Bearer " + $credentials.apiToken}}',
-				'Content-Type': 'application/x-www-form-urlencoded',
 			},
 		},
 	};
 
-	// Credential test button
 	test = {
 		request: {
 			method: 'POST' as IHttpRequestMethods,
 			url: '={{$credentials.baseUrl.replace(/\\/$/, "")}}/civicrm/ajax/api4/Contact/get',
 			headers: {
 				'X-Civi-Auth': '={{"Bearer " + $credentials.apiToken}}',
-				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Type': 'application/json',
 			},
 			body: {
-				params: '={"limit":1}', // API4 compatible
+				limit: 1,
 			},
-			json: true,
 		},
 	};
 
@@ -42,8 +42,6 @@ export class CiviCrmApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			required: true,
-			placeholder: 'https://crm.example.org',
-			description: 'Base URL without a trailing slash.',
 		},
 		{
 			displayName: 'API Token',
@@ -52,7 +50,6 @@ export class CiviCrmApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			required: true,
-			description: 'Sent as "X-Civi-Auth: Bearer &lt;token&gt;"',
 		},
 	];
 }
