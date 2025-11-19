@@ -1,11 +1,10 @@
 import type {
-	ICredentialDataDecryptedObject,
-	ICredentialTestFunctions,
-	ICredentialsDecrypted,
+	ICredentialType,
 	INodeProperties,
+	ICredentialTestRequest,
 } from 'n8n-workflow';
 
-export class CiviCrmApi {
+export class CiviCrmApi implements ICredentialType {
 
 	name = 'civiCrmApi';
 	displayName = 'CiviCRM API';
@@ -29,27 +28,24 @@ export class CiviCrmApi {
 		},
 	];
 
-	// ✔ Autenticación genérica (esto sí es válido)
 	authenticate = {
-		type: 'generic',
+		type: 'generic' as const,
 		properties: {
 			headers: {
-				'X-Civi-Auth': '={{"Bearer " + $credentials.apiToken}}',
+				'X-Civi-Auth': '={{ "Bearer " + $credentials.apiToken }}',
 			},
 		},
 	};
 
-test = {
-	httpRequest: {
-		method: 'POST',
-		url: '={{ $credentials.baseUrl.replace(/\\/$/, "") }}/civicrm/ajax/api4/Contact/get',
-		headers: {
-			'X-Civi-Auth': '={{ "Bearer " + $credentials.apiToken }}',
-			'Content-Type': 'application/json',
+	test: ICredentialTestRequest = {
+		request: {
+			method: 'POST',
+			url: '={{ $credentials.baseUrl.replace(/\\/$/, "") }}/civicrm/ajax/api4/Contact/get',
+			headers: {
+				'X-Civi-Auth': '={{ "Bearer " + $credentials.apiToken }}',
+				'Content-Type': 'application/json',
+			},
+			body: { limit: 1 },
 		},
-		body: {
-			limit: 1,
-		},
-	},
-};
+	};
 }
