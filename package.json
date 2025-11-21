@@ -12,13 +12,14 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": {
-    "dev": "n8n-node dev",
-    "build": "n8n-node build",
-    "lint": "n8n-node lint",
-    "release": "n8n-node release",
-    "test": "npm run build"
-  },
+ "scripts": {
+  "dev": "n8n-node dev",
+  "build": "n8n-node build && pnpm run copy:assets",
+  "copy:assets": "cp src/nodes/CiviCrm/civicrm.svg dist/nodes/CiviCrm/",
+  "lint": "n8n-node lint",
+  "release": "n8n-node release",
+  "test": "npm run build"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ixiam/n8n-nodes-civicrm.git"
@@ -40,15 +41,18 @@
     ]
   },
   "devDependencies": {
-    "@n8n/node-cli": "^0.21.0",
-    "@types/node": "^20.11.30",
-    "@typescript-eslint/eslint-plugin": "6.21.0",
-    "@typescript-eslint/parser": "6.21.0",
-    "eslint": "8.57.0",
-    "eslint-plugin-n8n-nodes-base": "^1.25.0",
-    "n8n-core": "^1.0.0",
-    "n8n-workflow": "^1.0.0",
-    "typescript": "5.3.3"
+  "@n8n/node-cli": "0.16.0",
+  "@types/node": "^20.11.30",
+
+  "@typescript-eslint/eslint-plugin": "^7.0.0",
+  "@typescript-eslint/parser": "^7.0.0",
+
+  "eslint": "8.57.0",
+  "eslint-plugin-n8n-nodes-base": "1.16.4",
+
+  "n8n-core": "^1.0.0",
+  "n8n-workflow": "^1.0.0",
+  "typescript": "^5.0.0"
   },
   "pnpm": {
     "overrides": {
