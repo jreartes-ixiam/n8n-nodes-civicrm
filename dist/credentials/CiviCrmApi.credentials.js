@@ -36,14 +36,15 @@ class CiviCrmApi {
         };
         this.test = {
             request: {
-                url: '={{ $credentials.baseUrl }}/civicrm/ajax/api4/Contact/get',
+                baseURL: '={{$credentials.baseUrl}}',
+                url: '/civicrm/ajax/api4/Contact/get',
                 method: 'POST',
-                body: {
-                    version: 4,
-                    select: ['id'],
-                    limit: 1,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                ignoreHttpStatusErrors: false,
+                body: {
+                    params: JSON.stringify({ select: ['id'], limit: 1 }),
+                },
             },
         };
     }
