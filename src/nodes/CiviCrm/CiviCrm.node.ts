@@ -483,6 +483,14 @@ export class CiviCrm implements INodeType {
 				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
 			},
 			{
+				displayName: 'Mark Email as Primary',
+				name: 'isPrimaryEmail',
+				type: 'boolean',
+				default: true,
+				description: 'Whether this email should be the primary email for the contact.',
+				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
+			},
+			{
 				displayName: 'Phone Location Type',
 				name: 'phoneLocation',
 				type: 'options',
@@ -494,6 +502,14 @@ export class CiviCrm implements INodeType {
 					{ name: 'Mobile', value: 'Mobile' },
 					{ name: 'Other', value: 'Other' },
 				],
+				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
+			},
+			{
+				displayName: 'Mark Phone as Primary',
+				name: 'isPrimaryPhone',
+				type: 'boolean',
+				default: true,
+				description: 'Whether this phone should be the primary phone for the contact.',
 				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
 			},
 			{
@@ -510,16 +526,12 @@ export class CiviCrm implements INodeType {
 				],
 				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
 			},
-
-			//
-			// PRIMARY FLAG
-			//
 			{
-				displayName: 'Mark as Primary',
-				name: 'isPrimary',
+				displayName: 'Mark Address as Primary',
+				name: 'isPrimaryAddress',
 				type: 'boolean',
 				default: true,
-				description: 'Whether this should be the primary email/phone/address for the contact.',
+				description: 'Whether this address should be the primary address for the contact.',
 				displayOptions: { show: { resource: ['contact'], operation: ['create', 'update'] } },
 			},
 
@@ -662,7 +674,9 @@ export class CiviCrm implements INodeType {
 			const emailLocationParam = this.getNodeParameter('emailLocation', i, 'Work') as string;
 			const phoneLocationParam = this.getNodeParameter('phoneLocation', i, 'Work') as string;
 			const addressLocationParam = this.getNodeParameter('addressLocation', i, 'Home') as string;
-			const isPrimary = this.getNodeParameter('isPrimary', i, true) as boolean;
+			const isPrimaryEmail = this.getNodeParameter('isPrimaryEmail', i, true) as boolean;
+			const isPrimaryPhone = this.getNodeParameter('isPrimaryPhone', i, true) as boolean;
+			const isPrimaryAddress = this.getNodeParameter('isPrimaryAddress', i, true) as boolean;
 
 			let emailLocationName = emailLocationParam;
 			let phoneLocationName = phoneLocationParam;
@@ -987,19 +1001,23 @@ export class CiviCrm implements INodeType {
 
 			/* SUBENTITIES */
 			if (resource === 'contact') {
-				if (isCreate && isPrimary) {
+				if (isCreate && isPrimaryEmail) {
 					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/delete', {
 						where: [
 							['contact_id', '=', contactId],
 							['is_primary', '=', true],
 						],
 					});
+				}
+				if (isCreate && isPrimaryPhone) {
 					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/delete', {
 						where: [
 							['contact_id', '=', contactId],
 							['is_primary', '=', true],
 						],
 					});
+				}
+				if (isCreate && isPrimaryAddress) {
 					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/delete', {
 						where: [
 							['contact_id', '=', contactId],
@@ -1009,36 +1027,130 @@ export class CiviCrm implements INodeType {
 				}
 
 				if (Object.keys(emailData).length) {
-					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/create', {
-						values: {
-							...emailData,
-							contact_id: contactId,
-							is_primary: isCreate ? isPrimary : false,
-							'location_type_id:name': emailLocationName,
-						},
-					});
+					if (isCreate) {
+						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/create', {
+							values: {
+								...emailData,
+								contact_id: contactId,
+								is_primary: isPrimaryEmail,
+								'location_type_id:name': emailLocationName,
+							},
+						});
+					} else {
+						const existingEmail = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/get', {
+							where: [
+								['contact_id', '=', contactId],
+								['location_type_id:name', '=', emailLocationName],
+							],
+							limit: 1,
+							select: ['id'],
+						});
+						const existingEmailId = existingEmail?.values?.[0]?.id as number | undefined;
+						if (existingEmailId) {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/update', {
+								values: {
+									id: existingEmailId,
+									...emailData,
+									contact_id: contactId,
+									is_primary: isPrimaryEmail,
+								},
+							});
+						} else {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/create', {
+								values: {
+									...emailData,
+									contact_id: contactId,
+									is_primary: isPrimaryEmail,
+									'location_type_id:name': emailLocationName,
+								},
+							});
+						}
+					}
 				}
 
-				if (Object.keys(phoneData).length) {
+			if (Object.keys(phoneData).length) {
+				if (isCreate) {
 					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/create', {
 						values: {
 							...phoneData,
 							contact_id: contactId,
-							is_primary: isCreate ? isPrimary : false,
+							is_primary: isPrimaryPhone,
 							'location_type_id:name': phoneLocationName,
 						},
 					});
+				} else {
+					const existingPhone = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/get', {
+						where: [
+							['contact_id', '=', contactId],
+							['location_type_id:name', '=', phoneLocationName],
+						],
+						limit: 1,
+						select: ['id'],
+					});
+					const existingPhoneId = existingPhone?.values?.[0]?.id as number | undefined;
+					if (existingPhoneId) {
+						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/update', {
+							values: {
+								id: existingPhoneId,
+								...phoneData,
+								contact_id: contactId,
+								is_primary: isPrimaryPhone,
+							},
+						});
+					} else {
+						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/create', {
+							values: {
+								...phoneData,
+								contact_id: contactId,
+								is_primary: isPrimaryPhone,
+								'location_type_id:name': phoneLocationName,
+							},
+						});
+					}
 				}
+			}
+
 
 				if (Object.keys(addressData).length) {
-					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/create', {
-						values: {
-							...addressData,
-							contact_id: contactId,
-							is_primary: isCreate ? isPrimary : false,
-							'location_type_id:name': addressLocationName,
-						},
-					});
+					if (isCreate) {
+						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/create', {
+							values: {
+								...addressData,
+								contact_id: contactId,
+								is_primary: isPrimaryAddress,
+								'location_type_id:name': addressLocationName,
+							},
+						});
+					} else {
+						const existingAddress = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/get', {
+							where: [
+								['contact_id', '=', contactId],
+								['location_type_id:name', '=', addressLocationName],
+							],
+							limit: 1,
+							select: ['id'],
+						});
+						const existingAddressId = existingAddress?.values?.[0]?.id as number | undefined;
+						if (existingAddressId) {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/update', {
+								values: {
+									id: existingAddressId,
+									...addressData,
+									contact_id: contactId,
+									is_primary: isPrimaryAddress,
+								},
+							});
+						} else {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Address/create', {
+								values: {
+									...addressData,
+									contact_id: contactId,
+									is_primary: isPrimaryAddress,
+									'location_type_id:name': addressLocationName,
+								},
+							});
+						}
+					}
 				}
 			}
 
