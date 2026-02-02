@@ -858,27 +858,37 @@ export class CiviCrm implements INodeType {
 
 				/* Email simple */
 				if (key === 'email') {
-					emailData.email = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						emailData.email = val;
+					}
 					continue;
 				}
 				if (key.startsWith('email.')) {
-					emailData[key.replace(/^email\./, '')] = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						emailData[key.replace(/^email\./, '')] = val;
+					}
 					continue;
 				}
 
 				/* Phone simple */
 				if (key === 'phone') {
-					phoneData.phone = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						phoneData.phone = val;
+					}
 					continue;
 				}
 				if (key.startsWith('phone.')) {
-					phoneData[key.replace(/^phone\./, '')] = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						phoneData[key.replace(/^phone\./, '')] = val;
+					}
 					continue;
 				}
 
 				/* Address */
 				if (key.startsWith('address.')) {
-					addressData[key.replace(/^address\./, '')] = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						addressData[key.replace(/^address\./, '')] = val;
+					}
 					continue;
 				}
 
@@ -900,19 +910,25 @@ export class CiviCrm implements INodeType {
 						}
 
 						if (root === 'email') {
-							if (!subfield) emailData.email = val;
-							else emailData[subfield] = val;
+							if (val !== '' && val !== null && val !== undefined) {
+								if (!subfield) emailData.email = val;
+								else emailData[subfield] = val;
+							}
 							continue;
 						}
 
 						if (root === 'phone') {
-							if (!subfield) phoneData.phone = val;
-							else phoneData[subfield] = val;
+							if (val !== '' && val !== null && val !== undefined) {
+								if (!subfield) phoneData.phone = val;
+								else phoneData[subfield] = val;
+							}
 							continue;
 						}
 
 						if (root === 'address') {
-							if (subfield) addressData[subfield] = val;
+							if (val !== '' && val !== null && val !== undefined) {
+								if (subfield) addressData[subfield] = val;
+							}
 							continue;
 						}
 					}
@@ -920,18 +936,24 @@ export class CiviCrm implements INodeType {
 
 				/* gender */
 				if (key === 'gender' || key === 'gender_id') {
-					values.gender_id = val;
+					if (val !== '' && val !== null && val !== undefined) {
+						values.gender_id = val;
+					}
 					continue;
 				}
 
 				/* birth_date */
 				if (key === 'birth_date' || key === 'birth') {
-					values.birth_date = normalizeBirthDate(String(val));
+					if (val !== '' && val !== null && val !== undefined) {
+						values.birth_date = normalizeBirthDate(String(val));
+					}
 					continue;
 				}
 
 				/* default */
-				values[key] = val;
+				if (val !== '' && val !== null && val !== undefined) {
+					values[key] = val;
+				}
 			}
 
 			/* Contact type */
@@ -965,7 +987,7 @@ export class CiviCrm implements INodeType {
 
 			/* SUBENTITIES */
 			if (resource === 'contact') {
-				if (isPrimary) {
+				if (isCreate && isPrimary) {
 					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Email/delete', {
 						where: [
 							['contact_id', '=', contactId],
@@ -991,7 +1013,7 @@ export class CiviCrm implements INodeType {
 						values: {
 							...emailData,
 							contact_id: contactId,
-							is_primary: isPrimary,
+							is_primary: isCreate ? isPrimary : false,
 							'location_type_id:name': emailLocationName,
 						},
 					});
@@ -1002,7 +1024,7 @@ export class CiviCrm implements INodeType {
 						values: {
 							...phoneData,
 							contact_id: contactId,
-							is_primary: isPrimary,
+							is_primary: isCreate ? isPrimary : false,
 							'location_type_id:name': phoneLocationName,
 						},
 					});
@@ -1013,7 +1035,7 @@ export class CiviCrm implements INodeType {
 						values: {
 							...addressData,
 							contact_id: contactId,
-							is_primary: isPrimary,
+							is_primary: isCreate ? isPrimary : false,
 							'location_type_id:name': addressLocationName,
 						},
 					});
