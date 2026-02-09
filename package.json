@@ -1,7 +1,7 @@
 {
   "name": "@ixiam/n8n-nodes-civicrm",
-  "version": "1.1.40",
-  "description": "Full-featured CiviCRM API v4 integration for n8n with support for Contacts, Memberships, Groups, Relationships, Activities and structured sub-entities like Email, Phone, and Address.",
+  "version": "1.1.41",
+  "description": "Full-featured CiviCRM API v4 integration for n8n",
   "license": "MIT",
   "keywords": [
     "n8n-community-node-package",

@@ -664,7 +664,10 @@ export class CiviCrm implements INodeType {
 			);
 
 			// Return the raw API4 response so advanced users can work with values and metadata
-			out.push({ json: res as IDataObject });
+			out.push({
+				json: res as IDataObject,
+				pairedItem: { item: 0 },
+			});
 			return [out];
 		}
 
@@ -724,7 +727,10 @@ export class CiviCrm implements INodeType {
 					params,
 				);
 
-				out.push({ json: res?.values?.[0] ?? {} });
+				out.push({
+					json: res?.values?.[0] ?? {},
+					pairedItem: { item: i },
+				});
 				continue;
 			}
 
@@ -791,7 +797,12 @@ export class CiviCrm implements INodeType {
 						);
 
 						const vals = r?.values ?? [];
-						for (const v of vals) out.push({ json: v });
+						for (const v of vals) {
+							out.push({
+								json: v,
+								pairedItem: { item: i },
+							});
+						}
 
 						if (vals.length < page) {
 							hasMore = false;
@@ -808,7 +819,12 @@ export class CiviCrm implements INodeType {
 					);
 
 					const vals = r?.values ?? [];
-					for (const v of vals) out.push({ json: v });
+					for (const v of vals) {
+						out.push({
+							json: v,
+							pairedItem: { item: i },
+						});
+					}
 				}
 
 				continue;
@@ -836,6 +852,7 @@ export class CiviCrm implements INodeType {
 						deleted_id: id,
 						api_response: r,
 					},
+					pairedItem: { item: i },
 				});
 
 				continue;
@@ -1068,36 +1085,8 @@ export class CiviCrm implements INodeType {
 					}
 				}
 
-			if (Object.keys(phoneData).length) {
-				if (isCreate) {
-					await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/create', {
-						values: {
-							...phoneData,
-							contact_id: contactId,
-							is_primary: isPrimaryPhone,
-							'location_type_id:name': phoneLocationName,
-						},
-					});
-				} else {
-					const existingPhone = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/get', {
-						where: [
-							['contact_id', '=', contactId],
-							['location_type_id:name', '=', phoneLocationName],
-						],
-						limit: 1,
-						select: ['id'],
-					});
-					const existingPhoneId = existingPhone?.values?.[0]?.id as number | undefined;
-					if (existingPhoneId) {
-						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/update', {
-							values: {
-								id: existingPhoneId,
-								...phoneData,
-								contact_id: contactId,
-								is_primary: isPrimaryPhone,
-							},
-						});
-					} else {
+				if (Object.keys(phoneData).length) {
+					if (isCreate) {
 						await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/create', {
 							values: {
 								...phoneData,
@@ -1106,9 +1095,37 @@ export class CiviCrm implements INodeType {
 								'location_type_id:name': phoneLocationName,
 							},
 						});
+					} else {
+						const existingPhone = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/get', {
+							where: [
+								['contact_id', '=', contactId],
+								['location_type_id:name', '=', phoneLocationName],
+							],
+							limit: 1,
+							select: ['id'],
+						});
+						const existingPhoneId = existingPhone?.values?.[0]?.id as number | undefined;
+						if (existingPhoneId) {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/update', {
+								values: {
+									id: existingPhoneId,
+									...phoneData,
+									contact_id: contactId,
+									is_primary: isPrimaryPhone,
+								},
+							});
+						} else {
+							await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/Phone/create', {
+								values: {
+									...phoneData,
+									contact_id: contactId,
+									is_primary: isPrimaryPhone,
+									'location_type_id:name': phoneLocationName,
+								},
+							});
+						}
 					}
 				}
-			}
 
 
 				if (Object.keys(addressData).length) {
@@ -1185,7 +1202,10 @@ export class CiviCrm implements INodeType {
 				},
 			);
 
-			out.push({ json: res?.values?.[0] ?? {} });
+			out.push({
+				json: res?.values?.[0] ?? {},
+				pairedItem: { item: i },
+			});
 		}
 
 		return [out];
