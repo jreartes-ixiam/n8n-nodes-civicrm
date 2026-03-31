@@ -5,6 +5,7 @@ class CiviCrmApi {
     constructor() {
         this.name = 'civiCrmApi';
         this.displayName = 'CiviCRM API';
+        this.icon = 'file:civicrm.svg';
         this.documentationUrl = 'https://docs.civicrm.org/dev/en/latest/api/v4/usage/#auth';
         this.properties = [
             {

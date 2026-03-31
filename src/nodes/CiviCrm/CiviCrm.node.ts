@@ -7,6 +7,7 @@ import type {
 	INodeTypeDescription,
 	IDataObject,
 } from 'n8n-workflow';
+import { NodeConnectionTypes } from 'n8n-workflow';
 
 import { civicrmApiRequest } from '../transport/GenericFunctions';
 import { resourceProp, operationProp } from './descriptions/resources';
@@ -88,8 +89,9 @@ export class CiviCrm implements INodeType {
 			'Includes dynamic mapping of email, phone, address and location types.\n' +
 			'Includes birth_date validation and JSON filters for GET MANY.\n',
 		defaults: { name: 'CiviCRM' },
-		inputs: ['main'],
-		outputs: ['main'],
+		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 
 		// @ts-ignore
 		usableAsTool: true,
@@ -604,16 +606,15 @@ export class CiviCrm implements INodeType {
 	methods = {
 		loadOptions: {
 			async loadOptionValues(this: ILoadOptionsFunctions) {
-				const { url, apiKey } = (await this.getCredentials('civiCrmApi')) as {
-					url: string;
-					apiKey: string;
+				const { baseUrl } = (await this.getCredentials('civiCrmApi')) as {
+					baseUrl: string;
+					apiToken: string;
 				};
 
-				const res = await this.helpers.httpRequest({
+				const res = await this.helpers.httpRequestWithAuthentication.call(this, 'civiCrmApi', {
 					method: 'POST',
-					url: `${url.replace(/\/$/, '')}/civicrm/ajax/api4/OptionValue/get`,
+					url: `${(baseUrl as string).replace(/\/$/, '')}/civicrm/ajax/api4/OptionValue/get`,
 					headers: {
-						Authorization: `Bearer ${apiKey}`,
 						'Content-Type': 'application/x-www-form-urlencoded',
 					},
 					body: { params: JSON.stringify({ limit: 50, select: ['id', 'label'] }) },
@@ -641,39 +642,40 @@ export class CiviCrm implements INodeType {
 		const resource = this.getNodeParameter('resource', 0) as Resource;
 		const operation = this.getNodeParameter('operation', 0) as Operation;
 
-		// Custom API call: generic passthrough to any API4 entity/action
-		if (resource === 'customApi') {
-			const entity = this.getNodeParameter('customEntity', 0) as string;
-			const action = this.getNodeParameter('customAction', 0) as string;
-			const paramsJson = this.getNodeParameter('customParamsJson', 0, '') as string;
-
-			let params: Record<string, unknown> = {};
-			if (paramsJson) {
-				try {
-					params = JSON.parse(paramsJson);
-				} catch (error) {
-					throw new Error('Invalid JSON in "Params (JSON)"');
-				}
-			}
-
-			const res = await civicrmApiRequest.call(
-				this,
-				'POST',
-				`/civicrm/ajax/api4/${entity}/${action}`,
-				params,
-			);
-
-			// Return the raw API4 response so advanced users can work with values and metadata
-			out.push({
-				json: res as IDataObject,
-				pairedItem: { item: 0 },
-			});
-			return [out];
-		}
-
-		const entity = ENTITY_MAP[resource];
+		const entity = resource !== 'customApi' ? ENTITY_MAP[resource] : '';
 
 		for (let i = 0; i < items.length; i++) {
+			try {
+			// Custom API call: generic passthrough to any API4 entity/action
+			if (resource === 'customApi') {
+				const customEntity = this.getNodeParameter('customEntity', i) as string;
+				const action = this.getNodeParameter('customAction', i) as string;
+				const paramsJson = this.getNodeParameter('customParamsJson', i, '') as string;
+
+				let params: Record<string, unknown> = {};
+				if (paramsJson) {
+					try {
+						params = JSON.parse(paramsJson);
+					} catch (error) {
+						throw new Error('Invalid JSON in "Params (JSON)"');
+					}
+				}
+
+				const res = await civicrmApiRequest.call(
+					this,
+					'POST',
+					`/civicrm/ajax/api4/${customEntity}/${action}`,
+					params,
+				);
+
+				// Return the raw API4 response so advanced users can work with values and metadata
+				out.push({
+					json: res as IDataObject,
+					pairedItem: { item: i },
+				});
+				continue;
+			}
+
 			const emailLocationParam = this.getNodeParameter('emailLocation', i, 'Work') as string;
 			const phoneLocationParam = this.getNodeParameter('phoneLocation', i, 'Work') as string;
 			const addressLocationParam = this.getNodeParameter('addressLocation', i, 'Home') as string;
@@ -923,7 +925,7 @@ export class CiviCrm implements INodeType {
 					continue;
 				}
 
-				/* Prefijo dinámico */
+				/* Dynamic prefix: resolve location type from field name */
 				const segments = key.split('.');
 				if (segments.length >= 2 && resource === 'contact') {
 					const prefixRaw = segments[0];
@@ -1206,6 +1208,13 @@ export class CiviCrm implements INodeType {
 				json: res?.values?.[0] ?? {},
 				pairedItem: { item: i },
 			});
+			} catch (error) {
+				if (this.continueOnFail()) {
+					out.push({ json: { error: error instanceof Error ? error.message : String(error) }, pairedItem: { item: i } });
+					continue;
+				}
+				throw error;
+			}
 		}
 
 		return [out];
