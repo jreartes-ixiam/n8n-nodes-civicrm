@@ -8,6 +8,7 @@ export class CiviCrmApi implements ICredentialType {
 
 	name = 'civiCrmApi';
 	displayName = 'CiviCRM API';
+	icon = 'file:civicrm.svg' as const;
 	documentationUrl = 'https://docs.civicrm.org/dev/en/latest/api/v4/usage/#auth';
 
 	properties: INodeProperties[] = [

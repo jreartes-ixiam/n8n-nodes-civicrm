@@ -2,8 +2,8 @@ import type { IExecuteFunctions, IHttpRequestOptions, JsonObject } from 'n8n-wor
 import { NodeApiError } from 'n8n-workflow';
 
 /**
- * Ejecuta una llamada a la API de CiviCRM v4 (Civi-Go)
- * Usa form-urlencoded con el campo "params" serializado
+ * Executes a CiviCRM API v4 call (Civi-Go).
+ * Uses form-urlencoded encoding with the "params" field serialized as JSON.
  */
 export async function civicrmApiRequest(
   this: IExecuteFunctions,
@@ -20,7 +20,7 @@ export async function civicrmApiRequest(
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    // cuerpo plano como espera Civi-Go
+    // flat body as expected by Civi-Go
     body: {
       params: JSON.stringify(body.params ?? body),
     },
@@ -40,13 +40,13 @@ export async function civicrmApiRequest(
 }
 
 /**
- * Devuelve el cuerpo estándar para las llamadas API4 (plano)
+ * Returns the standard body for API4 calls (flat params).
  */
 export function api4(
   entity: string,
   action: string,
   params: Record<string, unknown> = {},
 ) {
-  // devolvemos los parámetros planos, no anidados
+  // return flat parameters, not nested
   return params;
 }
