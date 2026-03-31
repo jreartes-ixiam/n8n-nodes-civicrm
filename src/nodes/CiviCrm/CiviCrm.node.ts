@@ -2,7 +2,6 @@ import type {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
-	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
@@ -93,9 +92,8 @@ export class CiviCrm implements INodeType {
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 
-		// @ts-ignore
 		usableAsTool: true,
-		// @ts-ignore
+		// @ts-expect-error n8n runtime accepts actions metadata for tools
 		actions: [
 			// ======================================================================
 			// CONTACT
@@ -656,7 +654,7 @@ export class CiviCrm implements INodeType {
 				if (paramsJson) {
 					try {
 						params = JSON.parse(paramsJson);
-					} catch (error) {
+					} catch {
 						throw new Error('Invalid JSON in "Params (JSON)"');
 					}
 				}
@@ -744,11 +742,11 @@ export class CiviCrm implements INodeType {
 				const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 				const whereJson = this.getNodeParameter('whereJson', i, '') as string;
 
-				let where: any[] = [];
+				let where: unknown[] = [];
 				if (whereJson) {
 					try {
-						where = JSON.parse(whereJson);
-					} catch (error) {
+						where = JSON.parse(whereJson) as unknown[];
+					} catch {
 						throw new Error('Invalid JSON in whereJson');
 					}
 				}
@@ -1234,7 +1232,7 @@ function convertValue(val: string): unknown {
 	try {
 		const j = JSON.parse(t);
 		if (typeof j === 'object') return j;
-	} catch (error) {
+	} catch {
 		// Not valid JSON, return original value
 	}
 	return val;
