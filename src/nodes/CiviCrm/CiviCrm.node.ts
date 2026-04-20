@@ -39,7 +39,7 @@ const ENTITY_MAP: Record<Exclude<Resource, 'customApi'>, string> = {
    LOCATION TYPE CACHE
 ============================================================================ */
 
-let locationTypeCache: Record<string, string> | null = null;
+const locationTypeCache: Record<string, Record<string, string>> = {};
 
 function normalizeLocationKey(s: string): string {
 	return String(s || '')
@@ -48,7 +48,10 @@ function normalizeLocationKey(s: string): string {
 }
 
 async function getLocationTypeMap(this: IExecuteFunctions): Promise<Record<string, string>> {
-	if (locationTypeCache) return locationTypeCache;
+	const credentials = await this.getCredentials('civiCrmApi');
+	const baseUrl = String(credentials?.baseUrl || 'default');
+
+	if (locationTypeCache[baseUrl]) return locationTypeCache[baseUrl];
 
 	const res = await civicrmApiRequest.call(this, 'POST', '/civicrm/ajax/api4/OptionValue/get', {
 		where: [['option_group_id:name', '=', 'location_type']],
@@ -68,7 +71,7 @@ async function getLocationTypeMap(this: IExecuteFunctions): Promise<Record<strin
 		if (k2) map[k2] = name;
 	}
 
-	locationTypeCache = map;
+	locationTypeCache[baseUrl] = map;
 	return map;
 }
 

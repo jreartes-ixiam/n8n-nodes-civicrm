@@ -12,12 +12,12 @@ export const resourceProp: INodeProperties = {
 	default: 'contact',
 	description: 'The entity to operate on. Choose "Custom API Call" to access any CiviCRM APIv4 entity not listed.',
 	options: [
-		{ name: 'Contact', value: 'contact' },
-		{ name: 'Membership', value: 'membership' },
-		{ name: 'Group', value: 'group' },
-		{ name: 'Relationship', value: 'relationship' },
 		{ name: 'Activity', value: 'activity' },
+		{ name: 'Contact', value: 'contact' },
 		{ name: 'Custom API Call', value: 'customApi' },
+		{ name: 'Group', value: 'group' },
+		{ name: 'Membership', value: 'membership' },
+		{ name: 'Relationship', value: 'relationship' },
 	],
 };
 
