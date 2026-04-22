@@ -88,11 +88,11 @@ export class CiviCrm implements INodeType {
 		version: 1,
 		description:
 			'Interact with CiviCRM API v4 (Civi-Go compatible).\n\n' +
-			'Supports Contact, Membership, Group, Relationship and Activity entities.\n' +
+			'Supports Contact, Membership, Group, Relationship, Activity entities, and Custom API Call.\n' +
 			'Includes dynamic mapping of email, phone, address and location types.\n' +
 			'Includes birth_date validation and JSON filters for GET MANY.\n',
 		defaults: { name: 'CiviCRM' },
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{{"get":"Get","getMany":"Get Many","create":"Create","update":"Update","delete":"Delete"}[$parameter["operation"]] + ": " + {"contact":"Contact","membership":"Membership","group":"Group","relationship":"Relationship","activity":"Activity","customApi":"Custom API Call"}[$parameter["resource"]]}}',
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 
@@ -100,9 +100,6 @@ export class CiviCrm implements INodeType {
 		usableAsTool: true,
 		// @ts-ignore
 		actions: [
-			// ======================================================================
-			// CONTACT
-			// ======================================================================
 			{
 				displayName: 'Get Contact',
 				name: 'getContact',

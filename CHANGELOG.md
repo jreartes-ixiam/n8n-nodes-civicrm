@@ -4,6 +4,20 @@ All notable changes to `@ixiam/n8n-nodes-civicrm` are documented here.
 
 ---
 
+## [2.1.5] — 2026-04-22
+
+### Fixed
+- **[MEDIUM]** `locationTypeCache` is now keyed per `baseUrl` to prevent cross-tenant cache pollution in n8n Cloud environments.
+- **[LOW]** Resource options sorted alphabetically (Activity, Contact, Group, Membership, Relationship) with Custom API Call kept at the end.
+
+### Improved
+- Node subtitle now shows human-readable labels in Title Case (e.g. `Get Many: Contact` instead of `getMany: contact`).
+- `resourceProp` now includes `noDataExpression: true` for consistency with `operationProp`.
+- Operation options now include individual descriptions per action.
+- Limit field description now states the default value explicitly.
+
+---
+
 ## [2.1.2] — 2025-04-01
 
 ### Fixed
