@@ -1,6 +1,6 @@
 {
   "name": "@ixiam/n8n-nodes-civicrm",
-  "version": "2.1.3",
+  "version": "2.1.5",
   "description": "Full-featured CiviCRM API v4 integration for n8n",
   "license": "MIT",
   "keywords": [
